@@ -82,6 +82,7 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
     ],
   });
 };
+
 // user subscribe action
 const actions = ({ api_key }) => {
   const stripe = Stripe(api_key);
@@ -226,6 +227,10 @@ const success = (config, stripe) => {
   return {
     name: "Stripe success view",
     display_state_form: false,
+    configuration_workflow: () =>
+      new Workflow({
+        steps: [],
+      }),
     get_state_fields: () => [],
     run: async (table_id, viewname, view_cfg, state, { req }) => {
       const session_id = state.stripe_session_id;
