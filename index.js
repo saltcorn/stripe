@@ -66,6 +66,16 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
                 label: "Role ID to elevate subscribers to",
                 type: "Integer",
               },
+              {
+                name: "success_url",
+                label: "Success url",
+                type: "String",
+              },
+              {
+                name: "cancel_url",
+                label: "Cancel url",
+                type: "String",
+              },
             ],
           }),
       },
@@ -126,7 +136,7 @@ const run_subscribe = (plug_config, stripe) => async (
   });
   </script>`;
 };
-
+const trailSlash = (s) => (s[s.length - 1] === "/" ? s : `${s}/`);
 const create_checkout_session = (plug_config, stripe) => async (
   table_id,
   viewname,
@@ -155,8 +165,10 @@ const create_checkout_session = (plug_config, stripe) => async (
       // the actual Session ID is returned in the query parameter when your customer
       // is redirected to the success page.
       success_url:
-        base_url + "/success.html?stripe_session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: base_url + "/canceled.html",
+        trailSlash(base_url) +
+        config.success_url +
+        "?stripe_session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: trailSlash(base_url) + config.success_url,
     });
     db.sql_log(session);
 
