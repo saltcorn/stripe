@@ -24,6 +24,31 @@ const configuration_workflow = () => {
                 type: "String",
                 required: true,
               },
+            ],
+          }),
+      },
+    ],
+  });
+};
+const subscribe_configuration_workflow = (config, stripe) => () => {
+  const cfg_base_url = getState().getConfig("base_url");
+
+  return new Workflow({
+    steps: [
+      {
+        name: "Stripe subscribe configuration",
+        form: () =>
+          new Form({
+            labelCols: 3,
+            blurb: [
+              !cfg_base_url
+                ? "You should set the 'Base URL' configration property. "
+                : "",
+              !config || !config.api_key
+                ? "You should set the Stripe API key in the stripe plugin configuration "
+                : "",
+            ],
+            fields: [
               {
                 name: "price_id",
                 label: "Stripe price ID",
@@ -48,10 +73,10 @@ const actions = ({ api_key }) => {
   };
 };
 
-const run_subscribe = (config, stripe) => async (
+const run_subscribe = (plug_config, stripe) => async (
   table_id,
   viewname,
-  view_cfg,
+  config,
   state,
   extraArgs
 ) => {
@@ -88,10 +113,10 @@ const run_subscribe = (config, stripe) => async (
   </script>`;
 };
 
-const create_checkout_session = (config, stripe) => async (
+const create_checkout_session = (plug_config, stripe) => async (
   table_id,
   viewname,
-  viewcfg,
+  config,
   body,
   { req }
 ) => {
@@ -117,6 +142,19 @@ const create_checkout_session = (config, stripe) => async (
       success_url:
         base_url + "/success.html?stripe_session_id={CHECKOUT_SESSION_ID}",
       cancel_url: base_url + "/canceled.html",
+    });
+    const user = await User.findOne({ id: user_id });
+    await user.update({
+      _attributes: {
+        ...user._attributes,
+        stripe_sessions: {
+          ...(user._attributes.stripe_sessions || {}),
+          [session.id]: {
+            onsuccess: { elevate_user_role: config.role_id },
+            created: new Date(),
+          },
+        },
+      },
     });
     return {
       json: {
@@ -147,7 +185,7 @@ const subscribe = (config, stripe) => {
     display_state_form: false,
     get_state_fields: () => [],
     run: run_subscribe(config, stripe),
-    //configuration_workflow: subscribe_configuration_workflow(config, stripe),
+    configuration_workflow: subscribe_configuration_workflow(config, stripe),
     routes: {
       create_checkout_session: create_checkout_session(config, stripe),
     },
@@ -165,7 +203,9 @@ const success = (config, stripe) => {
 
       //elevate user
       const user = await User.findOne({ id: user_id });
-      await user.update({ role_id: config.role_id });
+      const session = user._attributes.stripe_sessions[session_id];
+      if (session && session.onsuccess && session.onsuccess.elevate_user_role)
+        await user.update({ role_id: session.onsuccess.elevate_user_role });
       //say something nice
       return "You're subscribed!";
     },
