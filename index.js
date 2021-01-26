@@ -158,6 +158,8 @@ const create_checkout_session = (plug_config, stripe) => async (
         base_url + "/success.html?stripe_session_id={CHECKOUT_SESSION_ID}",
       cancel_url: base_url + "/canceled.html",
     });
+    db.sql_log(session);
+
     const user = await User.findOne({ id: user_id });
     await user.update({
       _attributes: {
