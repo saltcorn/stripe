@@ -1,5 +1,6 @@
 const Workflow = require("@saltcorn/data/models/workflow");
 const Form = require("@saltcorn/data/models/form");
+const User = require("@saltcorn/data/models/user");
 const Stripe = require("stripe");
 const { getState } = require("@saltcorn/data/db/state");
 
@@ -54,6 +55,7 @@ const run_subscribe = (config, stripe) => async (
   state,
   extraArgs
 ) => {
+  //check we are logged in
   const priceId = config.price_id;
   return `<script src="https://js.stripe.com/v3/"></script>
   <button id="${viewname}_checkout">Subscribe</button>
@@ -95,7 +97,7 @@ const create_checkout_session = (config, stripe) => async (
 ) => {
   const { priceId } = req.body;
   const base_url = getState().getConfig("base_url");
-
+  const user_id = req.user.id;
   // See https://stripe.com/docs/api/checkout/sessions/create
   // for additional parameters to pass.
   try {
@@ -116,27 +118,21 @@ const create_checkout_session = (config, stripe) => async (
         base_url + "/success.html?stripe_session_id={CHECKOUT_SESSION_ID}",
       cancel_url: base_url + "/canceled.html",
     });
-
-    res.send({
-      sessionId: session.id,
-    });
-  } catch (e) {
-    res.status(400);
-    return res.send({
-      error: {
-        message: e.message,
+    return {
+      json: {
+        sessionId: session.id,
       },
-    });
+    };
+  } catch (e) {
+    return {
+      status: 400,
+      json: {
+        error: {
+          message: e.message,
+        },
+      },
+    };
   }
-};
-const checkout_completed = (config, stripe) => async (
-  table_id,
-  viewname,
-  viewcfg,
-  body,
-  { req }
-) => {
-  //
 };
 
 const viewtemplates = (config) => {
@@ -154,7 +150,6 @@ const subscribe = (config, stripe) => {
     //configuration_workflow: subscribe_configuration_workflow(config, stripe),
     routes: {
       create_checkout_session: create_checkout_session(config, stripe),
-      checkout_completed: checkout_completed(config, stripe),
     },
   };
 };
@@ -163,13 +158,17 @@ const success = (config, stripe) => {
     name: "Stripe success view",
     display_state_form: false,
     get_state_fields: () => [],
-    run: (config, stripe) => async (
-      table_id,
-      viewname,
-      view_cfg,
-      state,
-      extraArgs
-    ) => {},
+    run: async (table_id, viewname, view_cfg, state, { req }) => {
+      const session_id = state.stripe_session_id;
+      const user_id = req.user.id;
+      // TODO: check session is completed
+
+      //elevate user
+      const user = await User.findOne({ id: user_id });
+      await user.update({ role_id: config.role_id });
+      //say something nice
+      return "You're subscribed!";
+    },
   };
 };
 module.exports = {
