@@ -3,6 +3,7 @@ const Form = require("@saltcorn/data/models/form");
 const User = require("@saltcorn/data/models/user");
 const Stripe = require("stripe");
 const { getState } = require("@saltcorn/data/db/state");
+const db = require("@saltcorn/data/db");
 
 const configuration_workflow = () => {
   const cfg_base_url = getState().getConfig("base_url");
@@ -19,8 +20,14 @@ const configuration_workflow = () => {
               : "",
             fields: [
               {
+                name: "public_api_key",
+                label: "Publishable API key",
+                type: "String",
+                required: true,
+              },
+              {
                 name: "api_key",
-                label: "API key",
+                label: "Secret API key",
                 type: "String",
                 required: true,
               },
@@ -89,10 +96,11 @@ const run_subscribe = (plug_config, stripe) => async (
     return fetch("/view/${viewname}/create_checkout_session", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "CSRF-Token": _sc_globalCsrf,
       },
       body: JSON.stringify({
-        priceId: ${priceId}
+        priceId: priceId
       })
     }).then(function(result) {
       return result.json();
@@ -101,8 +109,9 @@ const run_subscribe = (plug_config, stripe) => async (
   document
   .getElementById("${viewname}_checkout")
   .addEventListener("click", function(evt) {
-    createCheckoutSession(${priceId}).then(function(data) {
+    createCheckoutSession('${priceId}').then(function(data) {
       // Call Stripe.js method to redirect to the new Checkout page
+      var stripe = Stripe('${config.public_api_key}');
       stripe
         .redirectToCheckout({
           sessionId: data.sessionId
@@ -121,6 +130,7 @@ const create_checkout_session = (plug_config, stripe) => async (
   { req }
 ) => {
   const { priceId } = req.body;
+  db.sql_log({ priceId, config });
   const base_url = getState().getConfig("base_url");
   const user_id = req.user.id;
   // See https://stripe.com/docs/api/checkout/sessions/create
@@ -162,6 +172,8 @@ const create_checkout_session = (plug_config, stripe) => async (
       },
     };
   } catch (e) {
+    db.sql_log(e);
+
     return {
       status: 400,
       json: {
