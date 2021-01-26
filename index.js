@@ -126,7 +126,7 @@ const run_subscribe = (plug_config, stripe) => async (
   .addEventListener("click", function(evt) {
     createCheckoutSession('${priceId}').then(function(data) {
       // Call Stripe.js method to redirect to the new Checkout page
-      var stripe = Stripe('${config.public_api_key}');
+      var stripe = Stripe('${plug_config.public_api_key}');
       stripe
         .redirectToCheckout({
           sessionId: data.sessionId
