@@ -106,6 +106,11 @@ const run_subscribe = (plug_config, stripe) => async (
       return result.json();
     });
   };
+  var handleResult = function(result) {
+    if (result.error) {
+      notifyAlert({type: "danger", text:result.error.message})
+    }
+  };
   document
   .getElementById("${viewname}_checkout")
   .addEventListener("click", function(evt) {
