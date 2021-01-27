@@ -46,11 +46,11 @@ const subscribe_configuration_workflow = (config, stripe) => async () => {
   db.sql_log(prices);
   const price_opts = (prices.data || []).map((p) => ({
     value: p.id,
-    label: `${p.nickname || ""} ${p.currency} ${Math.floor(
-      p.unit_amount / 100
-    )}.${p.unit_amount % 100} ${p.type} ${
-      p.recurring ? p.recurring.interval : ""
-    }`,
+    label: `${
+      p.nickname ? `${p.nickname}: ` : ""
+    }${p.currency.toUpperCase()} ${Math.floor(p.unit_amount / 100)}.${
+      p.unit_amount % 100
+    } ${p.type} ${p.recurring ? p.recurring.interval : ""}`,
   }));
   return new Workflow({
     steps: [
