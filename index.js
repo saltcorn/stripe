@@ -33,6 +33,13 @@ const configuration_workflow = () => {
                 type: "String",
                 required: true,
               },
+              {
+                name: "webhook_signing_secret",
+                label: "Webhook signing secret",
+                sublabel: `Enable a 'stripe_webhook' as an 'API call' action.`,
+                type: "String",
+                required: true,
+              },
             ],
           }),
       },
@@ -41,10 +48,27 @@ const configuration_workflow = () => {
 };
 
 // user subscribe action
-const actions = ({ api_key }) => {
+const actions = ({ api_key, webhook_signing_secret }) => {
   const stripe = Stripe(api_key);
   return {
-    check_stripe_subscriptions: { run: async () => {} },
+    stripe_webhook: {
+      run: async ({ req, body }) => {
+        const sig = req.headers["stripe-signature"];
+
+        const event = stripe.webhooks.constructEvent(
+          body,
+          sig,
+          webhook_signing_secret
+        );
+        db.sql_log(event);
+
+        switch (event.type) {
+          default:
+            console.log(`Unhandled event type ${event.type}`);
+        }
+        return { received: true };
+      },
+    },
   };
 };
 
@@ -53,6 +77,7 @@ const viewtemplates = (config) => {
 
   return [subscribe(config, stripe), success(config, stripe)];
 };
+
 module.exports = {
   sc_plugin_api_version: 1,
   configuration_workflow,
