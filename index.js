@@ -56,8 +56,6 @@ const actions = ({ api_key, webhook_signing_secret }) => {
         let event;
         if (webhook_signing_secret) {
           const sig = req.headers["stripe-signature"];
-          db.sql_log(sig);
-          db.sql_log(body);
           event = stripe.webhooks.constructEvent(
             req.rawBody,
             sig,
@@ -72,12 +70,14 @@ const actions = ({ api_key, webhook_signing_secret }) => {
             const session_id = event.data.object.id;
             const schemaPrefix = db.getTenantSchemaPrefix();
 
-            const { rows } = db.query(
+            const result = db.query(
               `select * from ${schemaPrefix}users where _attributes->'stripe_sessions'->'${db.sqlsanitize(
                 session_id
               )}' is not null`
             );
-            const user = rows[0];
+            db.sql_log(result);
+
+            const user = result.rows[0];
             if (user) {
               const session = user._attributes.stripe_sessions[session_id];
               if (
