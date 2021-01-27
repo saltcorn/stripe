@@ -68,6 +68,25 @@ const actions = ({ api_key, webhook_signing_secret }) => {
         }
         db.sql_log(event);
         switch (event.type) {
+          case "checkout.session.completed":
+            const session_id = event.data.object.id;
+            const user = await User.findOne({
+              sql: `_attributes->'stripe_sessions'->'${db.sqlsanitize(
+                session_id
+              )}' is not null`,
+            });
+            if (user) {
+              const session = user._attributes.stripe_sessions[session_id];
+              if (
+                session &&
+                session.onsuccess &&
+                session.onsuccess.elevate_user_role
+              )
+                await user.update({
+                  role_id: session.onsuccess.elevate_user_role,
+                });
+            }
+            break;
           default:
             console.log(`Unhandled event type ${event.type}`);
         }
@@ -95,6 +114,7 @@ module.exports = {
 
 -webhook option
 -billing portal
+-success/cancel urls by dropdown
 -renewals?
 -rm db.sql_log calls
 */
