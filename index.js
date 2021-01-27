@@ -6,6 +6,7 @@ const { getState } = require("@saltcorn/data/db/state");
 const db = require("@saltcorn/data/db");
 const success = require("./success");
 const subscribe = require("./subscribe");
+const portal = require("./portal");
 const { upgrade_with_session_id } = require("./common");
 
 const configuration_workflow = () => {
@@ -117,7 +118,11 @@ const actions = ({ api_key, webhook_signing_secret }) => {
 const viewtemplates = (config) => {
   const stripe = Stripe(config.api_key);
 
-  return [subscribe(config, stripe), success(config, stripe)];
+  return [
+    subscribe(config, stripe),
+    success(config, stripe),
+    portal(config, stripe),
+  ];
 };
 
 module.exports = {
