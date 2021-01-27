@@ -47,6 +47,26 @@ const configuration_workflow = () => {
   });
 };
 
+const sessionCompleted = async (event, stripe) => {
+  const session_id = event.data.object.id;
+  const schemaPrefix = db.getTenantSchemaPrefix();
+
+  const result = await db.query(
+    `select * from ${schemaPrefix}users where _attributes->'stripe_sessions'->'${db.sqlsanitize(
+      session_id
+    )}' is not null`
+  );
+
+  const user = result.rows[0];
+  if (user) {
+    const session = user._attributes.stripe_sessions[session_id];
+    if (session && session.onsuccess && session.onsuccess.elevate_user_role)
+      await new User(user).update({
+        role_id: Math.min(user.role_id, +session.onsuccess.elevate_user_role),
+      });
+  }
+};
+
 // user subscribe action
 const actions = ({ api_key, webhook_signing_secret }) => {
   const stripe = Stripe(api_key);
@@ -64,36 +84,9 @@ const actions = ({ api_key, webhook_signing_secret }) => {
         } else {
           event = body;
         }
-        db.sql_log(event);
         switch (event.type) {
           case "checkout.session.completed":
-            const session_id = event.data.object.id;
-            const schemaPrefix = db.getTenantSchemaPrefix();
-
-            const result = await db.query(
-              `select * from ${schemaPrefix}users where _attributes->'stripe_sessions'->'${db.sqlsanitize(
-                session_id
-              )}' is not null`
-            );
-            db.sql_log(result);
-
-            const user = result.rows[0];
-            if (user) {
-              const session = user._attributes.stripe_sessions[session_id];
-              if (
-                session &&
-                session.onsuccess &&
-                session.onsuccess.elevate_user_role
-              )
-                await new User(user).update({
-                  role_id: Math.min(
-                    user.role_id,
-                    +session.onsuccess.elevate_user_role
-                  ),
-                });
-            } else {
-              db.sql_log(`user not found`);
-            }
+            await sessionCompleted(event, stripe);
             break;
           default:
             console.log(`Unhandled event type ${event.type}`);
@@ -120,7 +113,6 @@ module.exports = {
 /*todo:
 
 
--webhook option
 -billing portal
 -success/cancel urls by dropdown
 -renewals?
