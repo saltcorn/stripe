@@ -14,7 +14,6 @@ const success = (config, stripe) => {
       const session_id = state.stripe_session_id;
       const user_id = req.user && req.user.id;
       if (session_id && user_id) {
-        // TODO: check session is completed
         const stripe_session = await stripe.checkout.sessions.retrieve(
           session_id
         );

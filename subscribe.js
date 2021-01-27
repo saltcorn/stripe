@@ -4,6 +4,7 @@ const User = require("@saltcorn/data/models/user");
 const Stripe = require("stripe");
 const { getState } = require("@saltcorn/data/db/state");
 const db = require("@saltcorn/data/db");
+const { trailSlash } = require("./common");
 
 const subscribe_configuration_workflow = (config, stripe) => () => {
   return new Workflow({
@@ -114,7 +115,6 @@ const run_subscribe = (plug_config, stripe) => async (
     });
     </script>`;
 };
-const trailSlash = (s) => (s[s.length - 1] === "/" ? s : `${s}/`);
 const create_checkout_session = (plug_config, stripe) => async (
   table_id,
   viewname,

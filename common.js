@@ -16,5 +16,6 @@ const upgrade_with_session_id = async ({ user, session_id, customer, req }) => {
     if (user.relogin && req) user.relogin(req);
   }
 };
+const trailSlash = (s) => (s[s.length - 1] === "/" ? s : `${s}/`);
 
-module.exports = { upgrade_with_session_id };
+module.exports = { upgrade_with_session_id, trailSlash };
