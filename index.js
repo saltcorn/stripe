@@ -43,7 +43,8 @@ const subscribe_configuration_workflow = (config, stripe) => async () => {
   const prices = await stripe.prices.list({
     limit: 30,
   });
-  const price_opts = prices.map((p) => ({
+  db.sql_log(prices);
+  const price_opts = (prices.data || []).map((p) => ({
     value: p.id,
     label: `${p.nickname | ""} ${p.currency} ${Math.floor(p.amount / 100)}.${
       p.amount % 100
