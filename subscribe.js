@@ -19,7 +19,6 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
           const prices = await stripe.prices.list({
             limit: 30,
           });
-          db.sql_log(prices);
           const price_opts = (prices.data || []).map((p) => ({
             value: p.id,
             label: `${
@@ -136,7 +135,6 @@ const create_checkout_session = (plug_config, stripe) => async (
   { req }
 ) => {
   const { priceId } = req.body;
-  db.sql_log({ priceId, config });
   const base_url = getState().getConfig("base_url");
   const user_id = req.user.id;
   // See https://stripe.com/docs/api/checkout/sessions/create
@@ -162,7 +160,6 @@ const create_checkout_session = (plug_config, stripe) => async (
         "?stripe_session_id={CHECKOUT_SESSION_ID}",
       cancel_url: trailSlash(base_url) + "page/" + config.cancel_page,
     });
-    db.sql_log(session);
 
     const user = await User.findOne({ id: user_id });
     await user.update({

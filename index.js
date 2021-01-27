@@ -131,10 +131,3 @@ module.exports = {
   actions,
   viewtemplates,
 };
-
-/*todo:
-
-
--success/cancel urls by dropdown
--rm db.sql_log calls
-*/

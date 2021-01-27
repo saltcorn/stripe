@@ -17,7 +17,6 @@ const success = (config, stripe) => {
         const stripe_session = await stripe.checkout.sessions.retrieve(
           session_id
         );
-        db.sql_log(stripe_session);
         if (!stripe_session) return "No session";
         if (stripe_session.payment_status === "unpaid")
           return "Payment not processed";
