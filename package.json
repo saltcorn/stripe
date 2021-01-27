@@ -1,6 +1,6 @@
 {
   "name": "@saltcorn/stripe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Subscriptions with Stripe",
   "main": "index.js",
   "dependencies": {
