@@ -37,9 +37,18 @@ const configuration_workflow = () => {
     ],
   });
 };
-const subscribe_configuration_workflow = (config, stripe) => () => {
+const subscribe_configuration_workflow = (config, stripe) => async () => {
   const cfg_base_url = getState().getConfig("base_url");
-
+  const roles = await User.get_roles();
+  const prices = await stripe.prices.list({
+    limit: 30,
+  });
+  const price_opts = prices.map((p) => ({
+    value: p.id,
+    label: `${p.nickname | ""} ${p.currency} ${Math.floor(p.amount / 100)}.${
+      p.amount % 100
+    } ${p.type}`,
+  }));
   return new Workflow({
     steps: [
       {
@@ -59,12 +68,17 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
               {
                 name: "price_id",
                 label: "Stripe price ID",
-                type: "String",
+                input_type: "select",
+                required: true,
+                options: price_opts,
+                sublabel: "Create prices in the Stripe dashboard",
               },
               {
                 name: "role_id",
                 label: "Role ID to elevate subscribers to",
-                type: "Integer",
+                input_type: "select",
+                required: true,
+                options: roles.map((r) => ({ value: r.id, label: r.role })),
               },
               {
                 name: "success_url",
@@ -180,7 +194,7 @@ const create_checkout_session = (plug_config, stripe) => async (
         stripe_sessions: {
           ...(user._attributes.stripe_sessions || {}),
           [session.id]: {
-            onsuccess: { elevate_user_role: config.role_id },
+            onsuccess: { elevate_user_role: +config.role_id },
             created: new Date(),
           },
         },
@@ -264,7 +278,6 @@ module.exports = {
 
 /*todo:
 
--roles from dropdown
 -price ids from dropdown-webhook option
 -pick pages from dropdown
 -renewals?
