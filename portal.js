@@ -13,11 +13,11 @@ const portal = (config, stripe) => {
     run: async (table_id, viewname, view_cfg, state, { req }) => {
       const user_id = req.user && req.user.id;
       const user = await User.findOne({ id: user_id });
-
-      if (session_id && user_id) {
+      const customer = user._attributes.stripe_customer;
+      if (customer) {
         // TODO: check session is completed
         const portalsession = await stripe.billingPortal.sessions.create({
-          customer: user._attributes.stripe_customer,
+          customer,
           return_url: "/",
         });
         return `<script>window.location.href="${portalsession.url}"</script>`;
