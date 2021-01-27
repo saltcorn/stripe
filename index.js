@@ -169,7 +169,7 @@ const create_checkout_session = (plug_config, stripe) => async (
         trailSlash(base_url) +
         config.success_url +
         "?stripe_session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: trailSlash(base_url) + config.success_url,
+      cancel_url: trailSlash(base_url) + config.cancel_url,
     });
     db.sql_log(session);
 
@@ -227,10 +227,7 @@ const success = (config, stripe) => {
   return {
     name: "Stripe success view",
     display_state_form: false,
-    configuration_workflow: () =>
-      new Workflow({
-        steps: [],
-      }),
+    configuration_workflow: () => new Workflow({ steps: [] }),
     get_state_fields: () => [],
     run: async (table_id, viewname, view_cfg, state, { req }) => {
       const session_id = state.stripe_session_id;
@@ -241,6 +238,10 @@ const success = (config, stripe) => {
           session_id
         );
         db.sql_log(stripe_session);
+        if (!stripe_session) return "No session";
+        if (stripe_session.payment_status === "unpaid")
+          return "Payment not processed";
+
         //elevate user
         const user = await User.findOne({ id: user_id });
         const session = user._attributes.stripe_sessions[session_id];
@@ -263,10 +264,9 @@ module.exports = {
 
 /*todo:
 
--check if session is completed
 -roles from dropdown
 -price ids from dropdown-webhook option
-
+-pick pages from dropdown
 -renewals?
 -rm db.sql_log calls
 */
