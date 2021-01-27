@@ -72,11 +72,12 @@ const actions = ({ api_key, webhook_signing_secret }) => {
             const session_id = event.data.object.id;
             const schemaPrefix = db.getTenantSchemaPrefix();
 
-            const user = db.query(
+            const { rows } = db.query(
               `select * from ${schemaPrefix}users where _attributes->'stripe_sessions'->'${db.sqlsanitize(
                 session_id
               )}' is not null`
             );
+            const user = rows[0];
             if (user) {
               const session = user._attributes.stripe_sessions[session_id];
               if (
