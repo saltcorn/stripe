@@ -50,7 +50,7 @@ const subscribe_configuration_workflow = (config, stripe) => async () => {
       p.nickname ? `${p.nickname}: ` : ""
     }${p.currency.toUpperCase()} ${Math.floor(p.unit_amount / 100)}.${
       p.unit_amount % 100
-    } ${p.type} ${p.recurring ? p.recurring.interval : ""}`,
+    }${p.recurring ? `/${p.recurring.interval}` : ""}`,
   }));
   return new Workflow({
     steps: [
