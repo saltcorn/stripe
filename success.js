@@ -25,8 +25,19 @@ const success = (config, stripe) => {
         //elevate user
         const user = await User.findOne({ id: user_id });
         const session = user._attributes.stripe_sessions[session_id];
-        if (session && session.onsuccess && session.onsuccess.elevate_user_role)
-          await user.update({ role_id: session.onsuccess.elevate_user_role });
+        if (
+          session &&
+          session.onsuccess &&
+          session.onsuccess.elevate_user_role
+        ) {
+          const new_role_id = Math.min(
+            user.role_id,
+            session.onsuccess.elevate_user_role
+          );
+          await user.update({ role_id: new_role_id });
+          user.role_id = new_role_id;
+          if (user.relogin) user.relogin(req);
+        }
         //say something nice
         return "You're subscribed!";
       } else {
