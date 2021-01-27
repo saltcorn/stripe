@@ -53,16 +53,20 @@ const actions = ({ api_key, webhook_signing_secret }) => {
   return {
     stripe_webhook: {
       run: async ({ req, body }) => {
-        const sig = req.headers["stripe-signature"];
-        db.sql_log(sig);
-        db.sql_log(body);
-        const event = stripe.webhooks.constructEvent(
-          body,
-          sig,
-          webhook_signing_secret
-        );
+        let event;
+        if (webhook_signing_secret) {
+          const sig = req.headers["stripe-signature"];
+          db.sql_log(sig);
+          db.sql_log(body);
+          event = stripe.webhooks.constructEvent(
+            req.rawBody,
+            sig,
+            webhook_signing_secret
+          );
+        } else {
+          event = body;
+        }
         db.sql_log(event);
-
         switch (event.type) {
           default:
             console.log(`Unhandled event type ${event.type}`);
