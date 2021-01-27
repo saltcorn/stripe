@@ -48,8 +48,9 @@ const configuration_workflow = () => {
   });
 };
 
-const sessionCompleted = async (event, stripe) => {
+const sessionCompleted = async (event) => {
   const session_id = event.data.object.id;
+  const customer = event.data.object.customer;
   const schemaPrefix = db.getTenantSchemaPrefix();
 
   const result = await db.query(
@@ -60,7 +61,21 @@ const sessionCompleted = async (event, stripe) => {
 
   const user = result.rows[0];
   if (user) {
-    await upgrade_with_session_id({ user: new User(user), session_id });
+    await upgrade_with_session_id({
+      user: new User(user),
+      session_id,
+      customer,
+    });
+  }
+};
+const cancelSubscription = async (event) => {
+  const customer = event.data.object.customer;
+  const ser = await User.findOne({
+    _attributes: { json: ["stripe_customer", customer] },
+  });
+
+  if (user) {
+    await user.update({ role_id: 8 });
   }
 };
 
@@ -87,7 +102,7 @@ const actions = ({ api_key, webhook_signing_secret }) => {
             break;
           case "customer.subscription.deleted":
           case "invoice.payment_failed":
-            await sessionCompleted(event, stripe);
+            await cancelSubscription(event, stripe);
             break;
 
           default:

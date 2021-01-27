@@ -25,7 +25,12 @@ const success = (config, stripe) => {
 
         //elevate user
         const user = await User.findOne({ id: user_id });
-        await upgrade_with_session_id({ user, req, session_id });
+        await upgrade_with_session_id({
+          user,
+          req,
+          session_id,
+          customer: stripe_session.customer,
+        });
         //say something nice
         return "You're subscribed!";
       } else {
