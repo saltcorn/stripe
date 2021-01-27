@@ -2,7 +2,7 @@
 
 Billing with Stripe
 
-This plugin allows you to use Stripe to link subscription payments tied to an elevated user role, such that subscribers are automatically given access to some resources that are for paying users only. Payments are handled by Stripe and you do not have to design a checkout form or workflow yourself; you only link your stripe account and then payments will be taken on the stripe checkout webpage.
+This plugin allows you to use Stripe to link subscription payments to an elevated user role, such that subscribers are automatically given access to some resources that are for paying users only. Payments are handled by Stripe and you do not have to design a checkout form or workflow yourself; you only link your stripe account and then payments will be taken on the Stripe checkout webpage.
 
 1. Create a Stripe account and make sure you have access to the dashboard
 2. You should have at least one product with one recurring price in stripe. Products and prices are created in the stripe dashboard
