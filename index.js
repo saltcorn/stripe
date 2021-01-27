@@ -70,11 +70,13 @@ const actions = ({ api_key, webhook_signing_secret }) => {
         switch (event.type) {
           case "checkout.session.completed":
             const session_id = event.data.object.id;
-            const user = await User.findOne({
-              sql: `_attributes->'stripe_sessions'->'${db.sqlsanitize(
+            const schemaPrefix = db.getTenantSchemaPrefix();
+
+            const user = db.query(
+              `select * from ${schemaPrefix}users where _attributes->'stripe_sessions'->'${db.sqlsanitize(
                 session_id
-              )}' is not null`,
-            });
+              )}' is not null`
+            );
             if (user) {
               const session = user._attributes.stripe_sessions[session_id];
               if (
@@ -82,12 +84,14 @@ const actions = ({ api_key, webhook_signing_secret }) => {
                 session.onsuccess &&
                 session.onsuccess.elevate_user_role
               )
-                await user.update({
+                await new User(user).update({
                   role_id: Math.min(
                     user.role_id,
                     +session.onsuccess.elevate_user_role
                   ),
                 });
+            } else {
+              db.sql_log(`user not found`);
             }
             break;
           default:
