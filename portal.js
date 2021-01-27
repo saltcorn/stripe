@@ -1,5 +1,6 @@
 const Workflow = require("@saltcorn/data/models/workflow");
 const User = require("@saltcorn/data/models/user");
+const { getState } = require("@saltcorn/data/db/state");
 
 const db = require("@saltcorn/data/db");
 const { upgrade_with_session_id } = require("./common");
