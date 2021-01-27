@@ -5,27 +5,27 @@ const Stripe = require("stripe");
 const { getState } = require("@saltcorn/data/db/state");
 const db = require("@saltcorn/data/db");
 
-const subscribe_configuration_workflow = (config, stripe) => async () => {
-  const cfg_base_url = getState().getConfig("base_url");
-  const roles = await User.get_roles();
-  const prices = await stripe.prices.list({
-    limit: 30,
-  });
-  db.sql_log(prices);
-  const price_opts = (prices.data || []).map((p) => ({
-    value: p.id,
-    label: `${
-      p.nickname ? `${p.nickname}: ` : ""
-    }${p.currency.toUpperCase()} ${Math.floor(p.unit_amount / 100)}.${
-      p.unit_amount % 100
-    }${p.recurring ? `/${p.recurring.interval}` : ""}`,
-  }));
+const subscribe_configuration_workflow = (config, stripe) => () => {
   return new Workflow({
     steps: [
       {
         name: "Stripe subscribe configuration",
-        form: () =>
-          new Form({
+        form: async () => {
+          const cfg_base_url = getState().getConfig("base_url");
+          const roles = await User.get_roles();
+          const prices = await stripe.prices.list({
+            limit: 30,
+          });
+          db.sql_log(prices);
+          const price_opts = (prices.data || []).map((p) => ({
+            value: p.id,
+            label: `${
+              p.nickname ? `${p.nickname}: ` : ""
+            }${p.currency.toUpperCase()} ${Math.floor(p.unit_amount / 100)}.${
+              p.unit_amount % 100
+            }${p.recurring ? `/${p.recurring.interval}` : ""}`,
+          }));
+          return new Form({
             labelCols: 3,
             blurb: [
               !cfg_base_url
@@ -62,7 +62,8 @@ const subscribe_configuration_workflow = (config, stripe) => async () => {
                 type: "String",
               },
             ],
-          }),
+          });
+        },
       },
     ],
   });
