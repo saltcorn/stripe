@@ -54,7 +54,8 @@ const actions = ({ api_key, webhook_signing_secret }) => {
     stripe_webhook: {
       run: async ({ req, body }) => {
         const sig = req.headers["stripe-signature"];
-
+        db.sql_log(sig);
+        db.sql_log(body);
         const event = stripe.webhooks.constructEvent(
           body,
           sig,
