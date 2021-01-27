@@ -236,7 +236,10 @@ const success = (config, stripe) => {
       const session_id = state.stripe_session_id;
       const user_id = req.user.id;
       // TODO: check session is completed
-
+      const stripe_session = await stripe.checkout.sessions.retrieve(
+        session_id
+      );
+      db.sql_log(stripe_session);
       //elevate user
       const user = await User.findOne({ id: user_id });
       const session = user._attributes.stripe_sessions[session_id];
@@ -253,3 +256,13 @@ module.exports = {
   actions,
   viewtemplates,
 };
+
+/*todo:
+
+-check if session is completed
+-roles from dropdown
+-price ids from dropdown-webhook option
+
+-renewals?
+-rm db.sql_log calls
+*/
