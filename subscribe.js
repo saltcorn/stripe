@@ -74,6 +74,11 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
                 sublabel:
                   "Redirect to this page when the user does not proceed with payment",
               },
+              {
+                name: "link_label",
+                label: "Link label",
+                type: "String",
+              },
             ],
           });
         },
@@ -91,7 +96,9 @@ const run_subscribe = (plug_config, stripe) => async (
   //check we are logged in
   const priceId = config.price_id;
   return `<script src="https://js.stripe.com/v3/"></script>
-    <button id="${viewname}_checkout">Subscribe</button>
+    <button class="btn btn-primary" id="${viewname}_checkout">${
+    config.link_label || "Subscribe"
+  }</button>
     <script>
     var createCheckoutSession = function(priceId) {
       return fetch("/view/${viewname}/create_checkout_session", {
