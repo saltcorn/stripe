@@ -15,14 +15,12 @@ const portal = (config, stripe) => {
       const user_id = req.user && req.user.id;
       const user = await User.findOne({ id: user_id });
       const customer = user._attributes.stripe_customer;
-      const base_url = getState().getConfig("base_url");
 
       if (customer) {
         const portalsession = await stripe.billingPortal.sessions.create({
           customer,
-          return_url: base_url,
         });
-        return `<script>window.location.href="${portalsession.url}"</script>`;
+        return `Redirecting...<script>window.location.href="${portalsession.url}"</script>`;
       } else {
         return "Not found";
       }

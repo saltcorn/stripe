@@ -135,7 +135,6 @@ module.exports = {
 /*todo:
 
 
--billing portal
 -success/cancel urls by dropdown
 -rm db.sql_log calls
 */

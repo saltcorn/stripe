@@ -1,5 +1,7 @@
 const Workflow = require("@saltcorn/data/models/workflow");
 const Form = require("@saltcorn/data/models/form");
+const Page = require("@saltcorn/data/models/page");
+
 const User = require("@saltcorn/data/models/user");
 const Stripe = require("stripe");
 const { getState } = require("@saltcorn/data/db/state");
@@ -25,6 +27,11 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
             }${p.currency.toUpperCase()} ${Math.floor(p.unit_amount / 100)}.${
               p.unit_amount % 100
             }${p.recurring ? `/${p.recurring.interval}` : ""}`,
+          }));
+          const pages = await Page.find();
+          const page_opts = pages.map((p) => ({
+            value: p.name,
+            label: p.name,
           }));
           return new Form({
             labelCols: 3,
@@ -53,14 +60,20 @@ const subscribe_configuration_workflow = (config, stripe) => () => {
                 options: roles.map((r) => ({ value: r.id, label: r.role })),
               },
               {
-                name: "success_url",
-                label: "Success url",
-                type: "String",
+                name: "success_page",
+                label: "Success Page",
+                input_type: "select",
+                options: page_opts,
+                sublabel:
+                  "Redirect to this page when subscription is successful",
               },
               {
-                name: "cancel_url",
-                label: "Cancel url",
-                type: "String",
+                name: "cancel_page",
+                label: "Cancel Page",
+                input_type: "select",
+                options: page_opts,
+                sublabel:
+                  "Redirect to this page when the user does not proceed with payment",
               },
             ],
           });
@@ -144,9 +157,10 @@ const create_checkout_session = (plug_config, stripe) => async (
       // is redirected to the success page.
       success_url:
         trailSlash(base_url) +
-        config.success_url +
+        "page/" +
+        config.success_page +
         "?stripe_session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: trailSlash(base_url) + config.cancel_url,
+      cancel_url: trailSlash(base_url) + "page/" + config.cancel_page,
     });
     db.sql_log(session);
 
