@@ -6,6 +6,7 @@ const { getState } = require("@saltcorn/data/db/state");
 const db = require("@saltcorn/data/db");
 const success = require("./success");
 const subscribe = require("./subscribe");
+const { upgrade_with_session_id } = require("./common");
 
 const configuration_workflow = () => {
   const cfg_base_url = getState().getConfig("base_url");
@@ -59,11 +60,7 @@ const sessionCompleted = async (event, stripe) => {
 
   const user = result.rows[0];
   if (user) {
-    const session = user._attributes.stripe_sessions[session_id];
-    if (session && session.onsuccess && session.onsuccess.elevate_user_role)
-      await new User(user).update({
-        role_id: Math.min(user.role_id, +session.onsuccess.elevate_user_role),
-      });
+    await upgrade_with_session_id({ user: new User(user), session_id });
   }
 };
 
@@ -88,6 +85,11 @@ const actions = ({ api_key, webhook_signing_secret }) => {
           case "checkout.session.completed":
             await sessionCompleted(event, stripe);
             break;
+          case "customer.subscription.deleted":
+          case "invoice.payment_failed":
+            await sessionCompleted(event, stripe);
+            break;
+
           default:
             console.log(`Unhandled event type ${event.type}`);
         }

@@ -2,6 +2,7 @@ const Workflow = require("@saltcorn/data/models/workflow");
 const User = require("@saltcorn/data/models/user");
 
 const db = require("@saltcorn/data/db");
+const { upgrade_with_session_id } = require("./common");
 
 const success = (config, stripe) => {
   return {
@@ -24,20 +25,7 @@ const success = (config, stripe) => {
 
         //elevate user
         const user = await User.findOne({ id: user_id });
-        const session = user._attributes.stripe_sessions[session_id];
-        if (
-          session &&
-          session.onsuccess &&
-          session.onsuccess.elevate_user_role
-        ) {
-          const new_role_id = Math.min(
-            user.role_id,
-            session.onsuccess.elevate_user_role
-          );
-          await user.update({ role_id: new_role_id });
-          user.role_id = new_role_id;
-          if (user.relogin) user.relogin(req);
-        }
+        await upgrade_with_session_id({ user, req, session_id });
         //say something nice
         return "You're subscribed!";
       } else {
