@@ -83,7 +83,10 @@ const actions = ({ api_key, webhook_signing_secret }) => {
                 session.onsuccess.elevate_user_role
               )
                 await user.update({
-                  role_id: session.onsuccess.elevate_user_role,
+                  role_id: Math.min(
+                    user.role_id,
+                    +session.onsuccess.elevate_user_role
+                  ),
                 });
             }
             break;
