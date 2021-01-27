@@ -9,6 +9,8 @@ const portal = (config, stripe) => {
   return {
     name: "Stripe customer portal",
     display_state_form: false,
+    description:
+      "Redirect the user immediately to their Stripe customer portal",
     configuration_workflow: () => new Workflow({ steps: [] }),
     get_state_fields: () => [],
     run: async (table_id, viewname, view_cfg, state, { req }) => {

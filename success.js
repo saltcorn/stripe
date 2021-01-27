@@ -9,6 +9,8 @@ const success = (config, stripe) => {
     name: "Stripe success view",
     display_state_form: false,
     configuration_workflow: () => new Workflow({ steps: [] }),
+    description:
+      "Embed this view on the Stripe success page to ensure the user's role is upgraded immediately upon success",
     get_state_fields: () => [],
     run: async (table_id, viewname, view_cfg, state, { req }) => {
       const session_id = state.stripe_session_id;

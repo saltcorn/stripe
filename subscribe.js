@@ -203,6 +203,7 @@ const create_checkout_session = (plug_config, stripe) => async (
 const subscribe = (config, stripe) => {
   return {
     name: "Subscribe with Stripe",
+    description: "Show a button link to purchase a subscription with Stripe",
     display_state_form: false,
     get_state_fields: () => [],
     run: run_subscribe(config, stripe),
