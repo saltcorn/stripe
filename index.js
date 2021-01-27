@@ -70,7 +70,7 @@ const sessionCompleted = async (event) => {
 };
 const cancelSubscription = async (event) => {
   const customer = event.data.object.customer;
-  const ser = await User.findOne({
+  const user = await User.findOne({
     _attributes: { json: ["stripe_customer", customer] },
   });
 
@@ -132,6 +132,5 @@ module.exports = {
 
 -billing portal
 -success/cancel urls by dropdown
--renewals?
 -rm db.sql_log calls
 */
