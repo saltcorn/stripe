@@ -8,6 +8,7 @@ const success = (config, stripe) => {
   return {
     name: "Stripe success view",
     display_state_form: false,
+    tableless: true,
     configuration_workflow: () => new Workflow({ steps: [] }),
     description:
       "Embed this view on the Stripe success page to ensure the user's role is upgraded immediately upon success",

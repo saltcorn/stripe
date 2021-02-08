@@ -205,6 +205,7 @@ const subscribe = (config, stripe) => {
     name: "Subscribe with Stripe",
     description: "Show a button link to purchase a subscription with Stripe",
     display_state_form: false,
+    tableless: true,
     get_state_fields: () => [],
     run: run_subscribe(config, stripe),
     configuration_workflow: subscribe_configuration_workflow(config, stripe),

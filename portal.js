@@ -13,6 +13,7 @@ const portal = (config, stripe) => {
       "Redirect the user immediately to their Stripe customer portal",
     configuration_workflow: () => new Workflow({ steps: [] }),
     get_state_fields: () => [],
+    tableless: true,
     run: async (table_id, viewname, view_cfg, state, { req }) => {
       const user_id = req.user && req.user.id;
       const user = await User.findOne({ id: user_id });
