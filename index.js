@@ -130,4 +130,5 @@ module.exports = {
   configuration_workflow,
   actions,
   viewtemplates,
+  functions: (config) => ({ get_stripe: () => Stripe(config.api_key) }),
 };
