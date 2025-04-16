@@ -31,6 +31,7 @@ const success = (config, stripe) => {
           req,
           session_id,
           customer: stripe_session.customer,
+          response: stripe_session,
         });
         //say something nice
         return "You're subscribed!";

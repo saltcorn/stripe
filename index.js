@@ -66,6 +66,7 @@ const sessionCompleted = async (event) => {
       user: new User(user),
       session_id,
       customer,
+      response: event,
     });
   }
 };
