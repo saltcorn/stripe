@@ -1,7 +1,7 @@
 const Workflow = require("@saltcorn/data/models/workflow");
 const Form = require("@saltcorn/data/models/form");
 const Page = require("@saltcorn/data/models/page");
-const Table = require("@saltcorn/data/models/page");
+const Table = require("@saltcorn/data/models/table");
 
 const User = require("@saltcorn/data/models/user");
 const Stripe = require("stripe");
