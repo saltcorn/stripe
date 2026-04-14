@@ -7,6 +7,7 @@ const db = require("@saltcorn/data/db");
 const success = require("./success");
 const subscribe = require("./subscribe");
 const portal = require("./portal");
+const one_time = require("./one_time");
 const { upgrade_with_session_id } = require("./common");
 
 const configuration_workflow = () => {
@@ -123,6 +124,7 @@ const viewtemplates = (config) => {
     subscribe(config, stripe),
     success(config, stripe),
     portal(config, stripe),
+    one_time(config, stripe),
   ];
 };
 

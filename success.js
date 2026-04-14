@@ -34,7 +34,8 @@ const success = (config, stripe) => {
           response: stripe_session,
         });
         //say something nice
-        return "You're subscribed!";
+        const mode = stripe_session.mode;
+        return mode === "payment" ? "Payment successful!" : "You're subscribed!";
       } else {
         return "No session";
       }
