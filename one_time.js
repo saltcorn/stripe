@@ -200,7 +200,7 @@ const create_one_time_checkout_session =
 
 const one_time = (config, stripe) => {
   return {
-    name: "Stripe one-time payment",
+    name: "Stripe checkout payment",
     description:
       "Show a button that directs the user to a one-time payment checkout with Stripe",
     display_state_form: false,
