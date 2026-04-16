@@ -131,5 +131,6 @@ module.exports = {
   configuration_workflow,
   actions,
   viewtemplates,
+  table_providers: require("./table-provider.js"),
   functions: (config) => ({ get_stripe: () => Stripe(config.api_key) }),
 };
